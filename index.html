@@ -99,15 +99,10 @@
       "./fonts/RealSimSunBold.ttf",
       "./fonts/GBKai.ttf",
       "./fonts/GBKaiBold.ttf",
-      "./fonts/GBKaiBold2.ttf",
-      "./fonts/GBFang.ttf",
-      "./fonts/GBFangBold.ttf",
       "./fonts/RealHei.ttf",
       "./fonts/RealHeiBold.ttf",
       "./fonts/RealKai.ttf",
-      "./fonts/RealYaHei.ttf",
       "./fonts/dev_xihei.ttf",
-      "./fonts/GBKaiBold2.ttf",
       "./fonts/NotoSans_Regular.ttf",
       "./fonts/NotoSans_Bold.ttf",
       "./fonts/Default_Sans.ttf",
@@ -124,7 +119,13 @@
       monospace:  ["Noto Sans", "宋体", "./fonts/NotoSans_Regular.ttf", "./fonts/RealSimSun.ttf"],
       cursive:    ["楷体", "宋体", "./fonts/RealKai.ttf", "./fonts/RealSimSun.ttf"],
       fantasy:    ["黑体", "宋体", "./fonts/RealHei.ttf", "./fonts/RealSimSun.ttf"]
-    }playerEl(); if (!p) return null;
+    }
+  };
+
+  /* ---- 手机打字辅助:把文字送进游戏(Flash)的输入框 ---- */
+  function playerEl() { return document.getElementById("rufflePlayer") || document.querySelector("ruffle-player"); }
+  function gameInput() {
+    var p = playerEl(); if (!p) return null;
     var r = p.shadowRoot || p;
     return r.querySelector("input, textarea");
   }
@@ -188,30 +189,7 @@
     });
   }
 
-  /* 游戏按这些名字请求字体;引擎 addFont 的第一个参数必须"正好是这个名字" */
-  var FONT_MAP = [
-    ["黑体",        "./fonts/RealHeiBold.ttf"],
-    ["黑体",        "./fonts/RealHei.ttf"],
-    ["宋体",        "./fonts/RealSimSunBold.ttf"],
-    ["宋体",        "./fonts/RealSimSun.ttf"],
-    ["新宋体",      "./fonts/RealNSimSun.ttf"],
-    ["楷体_GB2312", "./fonts/GBKaiBold.ttf"],
-    ["楷体_GB2312", "./fonts/GBKai.ttf"],
-    ["楷体",        "./fonts/RealKai.ttf"],
-    ["华文细黑",    "./fonts/dev_xihei.ttf"],
-    ["仿宋_GB2312", "./fonts/GBFangBold.ttf"],
-    ["仿宋_GB2312", "./fonts/GBFang.ttf"],
-    ["微软雅黑",    "./fonts/RealYaHei.ttf"],
-    ["Noto Sans",   "./fonts/NotoSans_Bold.ttf"],
-    ["Noto Sans",   "./fonts/NotoSans_Regular.ttf"],
-    ["_sans",       "./fonts/Default_SansBold.ttf"],
-    ["_sans",       "./fonts/Default_Sans.ttf"],
-    ["_serif",      "./fonts/Default_SerifBold.ttf"],
-    ["_serif",      "./fonts/Default_Serif.ttf"],
-    ["_typewriter", "./fonts/Default_TypewriterBold.ttf"],
-    ["_typewriter", "./fonts/Default_Typewriter.ttf"]
-  ];
-
+  /* 字体交给 config.fontSources,引擎内部按 URL 注册;页面不重复下载 */
   function boot() {
     try {
       var ruffle = window.RufflePlayer.newest();
@@ -219,48 +197,27 @@
       player.id = "rufflePlayer";
       document.getElementById("stage").appendChild(player);
       var hint = document.getElementById("hint");
-
-      (async function () {
-        var rp = player.ruffle();
-        /* 关键修复:按"游戏请求的字体名"逐个注册(addFont 的名字必须是字体名,不是 URL) */
-        /* 第一步:先加载 SWF(引擎实例此时才真正就绪) */
-        try { rp.load("1.swf"); } catch (e) { errs0 = String(e); }
-        var errs0 = "";
-        /* 第二步:等引擎就绪,再按"游戏请求的字体名"逐个注册 */
-        var ok = 0, fail = 0, errs = [];
-        await new Promise(function (r) { setTimeout(r, 2000); });
-
-        var fontsCache = [];
-        for (var i = 0; i < FONT_MAP.length; i++) {
+      if (hint) hint.textContent = "\u6b63\u5728\u52a0\u8f7d\u5f15\u64ce\u4e0e\u5b57\u4f53\uff08\u9996\u6b21\u7ea6 1-3 \u5206\u949f\uff09\u2026";
+      var tries = 0;
+      (function go() {
+        var rp = null;
+        try { rp = player.ruffle(); } catch (err) { rp = null; }
+        if (rp && typeof rp.load === "function") {
           try {
-            var res = await fetch(FONT_MAP[i][1]);
-            if (!res.ok) { fail++; errs.push(FONT_MAP[i][1] + " HTTP " + res.status); continue; }
-            fontsCache.push([FONT_MAP[i][0], new Uint8Array(await res.arrayBuffer())]);
-          } catch (e) { fail++; errs.push(FONT_MAP[i][1] + " fetch失败"); }
-        }
-
-        function tryRegister(tag) {
-          ok = 0; var e2 = [];
-          for (var k = 0; k < fontsCache.length; k++) {
-            try { rp.addFont(fontsCache[k][0], fontsCache[k][1]); ok++; }
-            catch (err) { e2.push(String(err && err.message || err)); }
+            rp.load("1.swf");
+            if (hint) hint.textContent = "\u6e38\u620f\u52a0\u8f7d\u4e2d\u2026\uff08\u9996\u6b21\u7ea6 1-3 \u5206\u949f\uff0c\u8bf7\u7a0d\u5019\uff09";
+          } catch (err2) {
+            if (hint) hint.textContent = "\u52a0\u8f7d\u51fa\u9519\uff1a" + (err2 && err2.message ? err2.message : err2);
           }
-          window.__fontDiag = { phase: tag, ok: ok, fail: fail, errs: errs.slice(0,3), regErrs: e2.slice(0,2), total: fontsCache.length, hasRuffle: !!rp };
-          return ok;
+          initKb();
+        } else if (++tries < 60) {
+          setTimeout(go, 500);
+        } else if (hint) {
+          hint.textContent = "\u5f15\u64ce\u521d\u59cb\u5316\u8d85\u65f6\uff0c\u8bf7\u5237\u65b0\u9875\u9762";
         }
-
-        tryRegister("after-load");
-        /* 若一个都没成功,再等一会儿重试一次 */
-        if (ok === 0) {
-          await new Promise(function (r) { setTimeout(r, 4000); });
-          tryRegister("retry");
-        }
-        if (hint) hint.textContent = "字体 " + ok + "/" + fontsCache.length + (errs0 ? " · load错误:" + errs0.slice(0,40) : "");
-        rp.load("1.swf");
-        initKb();
       })();
     } catch (e) {
-      document.getElementById("hint").textContent = "初始化失败: " + e.message;
+      document.getElementById("hint").textContent = "\u521d\u59cb\u5316\u5931\u8d25\uff1a" + e.message;
     }
   }
 
