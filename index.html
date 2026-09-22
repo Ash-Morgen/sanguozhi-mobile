@@ -85,7 +85,7 @@
     quality: "high",
     wmode: "direct",
     allowScriptAccess: false,
-    allowNetworking: "all",
+    allowNetworking: "internal",
     splashScreen: false,
     contextMenu: "off",
     openUrlMode: "deny",
@@ -94,31 +94,25 @@
        这些是"真·同名字体"(游戏按名字请求:宋体/新宋体/楷体_GB2312/仿宋_GB2312/黑体/楷体/微软雅黑/Noto Sans),
        已子集化(GB2312+ASCII)以控制体积 */
     fontSources: [
-      "./fonts/RealSimSun.ttf",
-      "./fonts/RealNSimSun.ttf",
-      "./fonts/RealSimSunBold.ttf",
-      "./fonts/GBKai.ttf",
-      "./fonts/GBKaiBold.ttf",
-      "./fonts/RealHei.ttf",
-      "./fonts/RealHeiBold.ttf",
-      "./fonts/RealKai.ttf",
-      "./fonts/dev_xihei.ttf",
-      "./fonts/NotoSans_Regular.ttf",
-      "./fonts/NotoSans_Bold.ttf",
-      "./fonts/Default_Sans.ttf",
-      "./fonts/Default_SansBold.ttf",
-      "./fonts/Default_Serif.ttf",
-      "./fonts/Default_SerifBold.ttf",
-      "./fonts/Default_Typewriter.ttf",
-      "./fonts/Default_TypewriterBold.ttf"
+      "黑体",
+      "宋体",
+      "新宋体",
+      "楷体_GB2312",
+      "华文细黑",
+      "楷体",
+      "微软雅黑",
+      "Noto Sans",
+      "_sans",
+      "_serif",
+      "_typewriter"
     ],
     /* 中文显示:引擎的默认字体位(_sans/_serif/_typewriter)必须指向"页面上真实存在的字体名" */
     defaultFonts: {
-      sans:       ["黑体", "宋体", "Noto Sans", "./fonts/RealHeiBold.ttf", "./fonts/RealHei.ttf", "./fonts/RealSimSun.ttf", "./fonts/NotoSans_Regular.ttf"],
-      serif:      ["宋体", "楷体", "Noto Sans", "./fonts/RealSimSunBold.ttf", "./fonts/RealSimSun.ttf", "./fonts/RealKai.ttf", "./fonts/NotoSans_Regular.ttf"],
-      monospace:  ["Noto Sans", "宋体", "./fonts/NotoSans_Regular.ttf", "./fonts/RealSimSun.ttf"],
-      cursive:    ["楷体", "宋体", "./fonts/RealKai.ttf", "./fonts/RealSimSun.ttf"],
-      fantasy:    ["黑体", "宋体", "./fonts/RealHei.ttf", "./fonts/RealSimSun.ttf"]
+      sans:       ["_sans", "黑体", "宋体", "Noto Sans"],
+      serif:      ["_serif", "宋体", "楷体", "Noto Sans"],
+      monospace:  ["_typewriter", "Noto Sans", "宋体"],
+      cursive:    ["楷体", "宋体"],
+      fantasy:    ["黑体", "宋体"]
     }
   };
 
